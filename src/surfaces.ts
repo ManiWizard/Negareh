@@ -5,7 +5,7 @@ import type { CharacterChange } from './characters';
 import { defaults, record } from './workspace-model';
 import type { Timeline, Character } from './project';
 import type { Json, Size, SurfaceState } from './workspace-model';
-export interface ProjectAccess { read: () => { name: string; notes: string; timelines: Timeline[]; characters: Character[]; busy: boolean }; write: (field: string, value: string) => void; createCharacter: () => Character; changeCharacter: (id: string, change: CharacterChange) => Character }
+export interface ProjectAccess { read: () => { name: string; notes: string; timelines: Timeline[]; characters: Character[]; busy: boolean }; write: (field: string, value: string) => void; createTimeline: () => Timeline; renameTimeline: (id: string, name: string) => void; createCharacter: () => Character; changeCharacter: (id: string, change: CharacterChange) => Character }
 export interface Option { id: string; name: string; description: string; modifier?: string }
 export interface Tool { id: string; name: string; description: string; shortcut: string; icon: string; writes?: boolean; options?: Option[]; command?: SurfaceCommand; available?: (context: SurfaceContext) => boolean }
 export interface ToolGroup { name: string; tools: Tool[] }

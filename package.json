@@ -5,12 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "check": "node --check scripts/benchmark.mjs && node --check scripts/build.mjs && node --check scripts/mcp.mjs && node --check scripts/mcp-check.mjs && node --check scripts/workspace-check.mjs && node --check scripts/workspace-ui-check.mjs && tsc --noEmit && eslint src --max-warnings 0",
+    "check": "node --check scripts/benchmark.mjs && node --check scripts/build.mjs && node --check scripts/mcp.mjs && node --check scripts/mcp-check.mjs && node --check scripts/workspace-check.mjs && node --check scripts/workspace-ui-check.mjs && node --check scripts/character-check.mjs && node --check scripts/character-fixture.mjs && node --check scripts/character-native-check.mjs && node --check scripts/character-preview.mjs && node --check scripts/character-studio-check.mjs && node --check scripts/character-ui-check.mjs && tsc --noEmit && eslint src --max-warnings 0",
     "build": "npm run check && node scripts/build.mjs",
     "bench": "node scripts/benchmark.mjs",
     "test:mcp": "node scripts/mcp-check.mjs",
     "test:workspace": "node --experimental-strip-types scripts/workspace-check.mjs",
     "test:workspace-ui": "node scripts/workspace-ui-check.mjs",
+    "test:character": "node --experimental-strip-types scripts/character-check.mjs",
+    "test:character-ui": "node scripts/character-ui-check.mjs",
+    "test:character-studio": "node scripts/character-studio-check.mjs",
+    "test:character-native": "node scripts/character-native-check.mjs",
     "tauri": "tauri"
   },
   "devDependencies": {

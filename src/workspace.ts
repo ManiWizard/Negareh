@@ -4,7 +4,6 @@ import type { Axis, Geometry, Rect, SurfaceState, Tile, Workspace, TabGroup } fr
 import { defaultSurface, icon, icons, newSurface, surfaces, toolsFor } from './surfaces';
 import type { ProjectAccess, SurfaceContext, SurfaceDefinition, SurfaceHandle, Tool } from './surfaces';
 import { characterInstance, instanceValues } from './characters';
-import type { Timeline } from './project';
 function characterInstanceName(button: HTMLButtonElement, name: string, instance: string): void {
   button.classList.add('character-instance-selector');
   let title = button.querySelector('span'), label = button.querySelector('small');
@@ -21,7 +20,7 @@ export interface WorkspaceRequest { action: string; target?: string | undefined;
 interface TileView { element: HTMLElement; deck: HTMLElement; rail: HTMLElement; body: HTMLElement; type: string; state: SurfaceState; definition: SurfaceDefinition | undefined; context: SurfaceContext; handle: SurfaceHandle; scope: AbortController; signature: string; railMetrics: { compact: number; grid: number; expanded: number }; railGrip: HTMLElement }
 type Preview = { kind: 'split'; tile: string; axis: Axis; ratio: number } | { kind: 'join'; survivor: string; removed: string } | { kind: 'resize'; node: string; ratio: number } | { kind: 'rail'; tile: string; width: number };
 interface Gesture { kind: 'corner' | 'divider' | 'rail'; id: string; pointer: number; owner: HTMLElement; x: number; y: number; currentX: number; currentY: number; shift: boolean; alt: boolean; moved: boolean; rect: Rect; startWidth: number }
-export function createWorkspace(host: HTMLElement, tabsHost: HTMLElement, template: HTMLTemplateElement, project: ProjectAccess & { createTimeline: () => Timeline; renameTimeline: (id: string, name: string) => void }, changed: () => void, report: (error: unknown) => void, signal: AbortSignal) {
+export function createWorkspace(host: HTMLElement, tabsHost: HTMLElement, template: HTMLTemplateElement, project: ProjectAccess, changed: () => void, report: (error: unknown) => void, signal: AbortSignal) {
   const model = new WorkspaceModel(newSurface, defaultSurface, 'Overview');
   const views = new Map<string, TileView>(), tabViews = new Map<string, HTMLElement>(), tabButtons = new Map<string, HTMLElement>(), dividers = new Map<string, HTMLElement>();
   const corners = new Map<string, { element: HTMLButtonElement; tiles: string[] }>();
@@ -363,7 +362,7 @@ export function createWorkspace(host: HTMLElement, tabsHost: HTMLElement, templa
     const context: SurfaceContext = {
       state, signal: scope.signal,
       view: update => { model.local(tile.id, state => { update(state.view); }); },
-      project: { read: project.read, createCharacter: () => { if (definition?.id !== 'character' || state.mode !== 'edit') throw new Error('Character editing is unavailable.'); return project.createCharacter(); }, changeCharacter: (id, change) => { if (definition?.id !== 'character' || state.mode !== 'edit') throw new Error('Character editing is unavailable.'); return project.changeCharacter(id, change); }, write: (field, value) => { const tool = definition ? toolsFor(definition).find(tool => tool.id === state.tool) : undefined; if (!definition?.modes.find(mode => mode.id === state.mode)?.writes || !tool?.writes) throw new Error('This surface is read only.'); project.write(field, value); } },
+      project: { read: project.read, createTimeline: () => project.createTimeline(), renameTimeline: (id, name) => { project.renameTimeline(id, name); }, createCharacter: () => { if (definition?.id !== 'character' || state.mode !== 'edit') throw new Error('Character editing is unavailable.'); return project.createCharacter(); }, changeCharacter: (id, change) => { if (definition?.id !== 'character' || state.mode !== 'edit') throw new Error('Character editing is unavailable.'); return project.changeCharacter(id, change); }, write: (field, value) => { const tool = definition ? toolsFor(definition).find(tool => tool.id === state.tool) : undefined; if (!definition?.modes.find(mode => mode.id === state.mode)?.writes || !tool?.writes) throw new Error('This surface is read only.'); project.write(field, value); } },
       effective: option => optionEffective(tile, option), local: update => { const next = structuredClone(state.data); update(next); if ((next.character !== state.data.character || next.instance !== state.data.instance) && handle.commit?.() === false) return; model.local(tile.id, state => { state.data = next; }); },
     };
     const handle = definition?.mount(body, context) ?? unavailable(body, tile.type);
@@ -510,7 +509,7 @@ export function createWorkspace(host: HTMLElement, tabsHost: HTMLElement, templa
       }
       const control = definition?.viewControls.find(control => control.id === args.value);
       if (!control || !view) throw new Error('Unknown or unsupported local view control.');
-      control.run({ ...view.context, project: { read: project.read, createCharacter: () => { throw new Error('View controls cannot modify characters.'); }, changeCharacter: () => { throw new Error('View controls cannot modify characters.'); }, write: () => { throw new Error('View controls cannot modify authored project content.'); } } }); return;
+      control.run({ ...view.context, project: { read: project.read, createTimeline: () => { throw new Error('View controls cannot modify timelines.'); }, renameTimeline: () => { throw new Error('View controls cannot modify timelines.'); }, createCharacter: () => { throw new Error('View controls cannot modify characters.'); }, changeCharacter: () => { throw new Error('View controls cannot modify characters.'); }, write: () => { throw new Error('View controls cannot modify authored project content.'); } } }); return;
     }
     if (!definition || !view) throw new Error('Surface is unavailable.');
     if (action === 'surface.write') { if (args.field !== 'name' && args.field !== 'notes') throw new Error('Unknown shared field.'); view.context.project.write(args.field, args.value ?? ''); return; }
