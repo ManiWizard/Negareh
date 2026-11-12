@@ -1,0 +1,30 @@
+{
+  "name": "negareh-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "check": "node --check scripts/benchmark.mjs && node --check scripts/build.mjs && node --check scripts/mcp.mjs && node --check scripts/mcp-check.mjs && node --check scripts/workspace-check.mjs && node --check scripts/workspace-ui-check.mjs && tsc --noEmit && eslint src --max-warnings 0",
+    "build": "npm run check && node scripts/build.mjs",
+    "bench": "node scripts/benchmark.mjs",
+    "test:mcp": "node scripts/mcp-check.mjs",
+    "test:workspace": "node --experimental-strip-types scripts/workspace-check.mjs",
+    "test:workspace-ui": "node scripts/workspace-ui-check.mjs",
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/server": "^2.4.0",
+    "@tauri-apps/cli": "^2.12.4",
+    "eslint": "^10.13.0",
+    "typescript": "~6.0.0",
+    "typescript-eslint": "^8.72.1",
+    "vite": "^8.3.5",
+    "zod": "^4.6.7"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.12.4"
+  }
+}
+
+

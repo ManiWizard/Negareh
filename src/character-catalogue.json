@@ -1,0 +1,282 @@
+[
+  {
+    "id": "essence",
+    "title": "Essence & identity",
+    "description": "Define the character’s core concept and stakes.",
+    "icon": "M8 2 14 8 8 14 2 8Z",
+    "traits": [
+      {
+        "id": "story-role",
+        "title": "Story role"
+      },
+      {
+        "id": "one-line-description",
+        "title": "One-line description"
+      },
+      {
+        "id": "want",
+        "title": "Want"
+      },
+      {
+        "id": "need",
+        "title": "Need"
+      },
+      {
+        "id": "greatest-fear",
+        "title": "Greatest fear"
+      },
+      {
+        "id": "personal-stakes",
+        "title": "Personal stakes"
+      },
+      {
+        "id": "secret",
+        "title": "Secret"
+      },
+      {
+        "id": "self-image",
+        "title": "Self-image"
+      }
+    ]
+  },
+  {
+    "id": "appearance",
+    "title": "Appearance",
+    "description": "Describe the character’s visual presentation.",
+    "icon": "M2 8s2-4 6-4 6 4 6 4-2 4-6 4-6-4-6-4Zm6-2v4",
+    "traits": [
+      {
+        "id": "build",
+        "title": "Build"
+      },
+      {
+        "id": "hair",
+        "title": "Hair"
+      },
+      {
+        "id": "eyes",
+        "title": "Eyes"
+      },
+      {
+        "id": "clothing",
+        "title": "Clothing"
+      },
+      {
+        "id": "distinctive-features",
+        "title": "Distinctive features"
+      },
+      {
+        "id": "voice",
+        "title": "Voice"
+      },
+      {
+        "id": "posture",
+        "title": "Posture"
+      },
+      {
+        "id": "signature-possessions",
+        "title": "Signature possessions"
+      }
+    ]
+  },
+  {
+    "id": "personality",
+    "title": "Personality",
+    "description": "Describe behavior, judgment, and reactions.",
+    "icon": "M3 3h10v10H3zM5 6h1m4 0h1M5 10h6",
+    "traits": [
+      {
+        "id": "strengths",
+        "title": "Strengths"
+      },
+      {
+        "id": "flaws",
+        "title": "Flaws"
+      },
+      {
+        "id": "temperament",
+        "title": "Temperament"
+      },
+      {
+        "id": "social-behavior",
+        "title": "Social behavior"
+      },
+      {
+        "id": "stress-response",
+        "title": "Stress response"
+      },
+      {
+        "id": "principles",
+        "title": "Principles"
+      },
+      {
+        "id": "decision-making-style",
+        "title": "Decision-making style"
+      },
+      {
+        "id": "contradictions",
+        "title": "Contradictions"
+      }
+    ]
+  },
+  {
+    "id": "history",
+    "title": "History & arc",
+    "description": "Track formative history and intended development.",
+    "icon": "M3 2h10v12H3zM5 5h6M5 8h6M5 11h4",
+    "traits": [
+      {
+        "id": "origin",
+        "title": "Origin"
+      },
+      {
+        "id": "childhood",
+        "title": "Childhood"
+      },
+      {
+        "id": "formative-event",
+        "title": "Formative event"
+      },
+      {
+        "id": "proudest-achievement",
+        "title": "Proudest achievement"
+      },
+      {
+        "id": "regret",
+        "title": "Regret"
+      },
+      {
+        "id": "current-goal",
+        "title": "Current goal"
+      },
+      {
+        "id": "current-arc",
+        "title": "Current arc"
+      },
+      {
+        "id": "desired-change",
+        "title": "Desired change"
+      }
+    ]
+  },
+  {
+    "id": "relationships",
+    "title": "Relationships",
+    "description": "Describe important connections and obligations.",
+    "icon": "M6 5a2 2 0 1 0-4 0 2 2 0 0 0 4 0Zm8 0a2 2 0 1 0-4 0 2 2 0 0 0 4 0ZM1 13v-2a3 3 0 0 1 6 0v2m2 0v-2a3 3 0 0 1 6 0v2",
+    "traits": [
+      {
+        "id": "family",
+        "title": "Family"
+      },
+      {
+        "id": "friends",
+        "title": "Friends"
+      },
+      {
+        "id": "allies",
+        "title": "Allies"
+      },
+      {
+        "id": "rivals",
+        "title": "Rivals"
+      },
+      {
+        "id": "enemies",
+        "title": "Enemies"
+      },
+      {
+        "id": "mentors",
+        "title": "Mentors"
+      },
+      {
+        "id": "romantic-bonds",
+        "title": "Romantic bonds"
+      },
+      {
+        "id": "obligations",
+        "title": "Obligations"
+      }
+    ]
+  },
+  {
+    "id": "body",
+    "title": "Body & health",
+    "description": "Record physical characteristics and limitations.",
+    "icon": "M6 2h4v4h4v4h-4v4H6v-4H2V6h4Z",
+    "traits": [
+      {
+        "id": "height",
+        "title": "Height"
+      },
+      {
+        "id": "weight",
+        "title": "Weight"
+      },
+      {
+        "id": "general-health",
+        "title": "General health"
+      },
+      {
+        "id": "scars-marks",
+        "title": "Scars / marks"
+      },
+      {
+        "id": "disabilities-limitations",
+        "title": "Disabilities / limitations"
+      },
+      {
+        "id": "handedness",
+        "title": "Handedness"
+      },
+      {
+        "id": "fitness",
+        "title": "Fitness"
+      },
+      {
+        "id": "medical-history",
+        "title": "Medical history"
+      }
+    ]
+  },
+  {
+    "id": "life",
+    "title": "Life & daily",
+    "description": "Describe ordinary circumstances and routines.",
+    "icon": "m2 7 6-5 6 5v7H2ZM6 14V9h4v5",
+    "traits": [
+      {
+        "id": "occupation",
+        "title": "Occupation"
+      },
+      {
+        "id": "education",
+        "title": "Education"
+      },
+      {
+        "id": "daily-routine",
+        "title": "Daily routine"
+      },
+      {
+        "id": "home",
+        "title": "Home"
+      },
+      {
+        "id": "resources",
+        "title": "Resources"
+      },
+      {
+        "id": "hobbies",
+        "title": "Hobbies"
+      },
+      {
+        "id": "likes",
+        "title": "Likes"
+      },
+      {
+        "id": "dislikes",
+        "title": "Dislikes"
+      }
+    ]
+  }
+]

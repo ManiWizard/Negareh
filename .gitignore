@@ -1,0 +1,6 @@
+# Owns generated-output exclusions; keep dependency lockfiles tracked.
+node_modules/
+dist/
+src-tauri/target/
+src-tauri/gen/schemas/
+benchmarks/

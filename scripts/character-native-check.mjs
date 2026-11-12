@@ -1,0 +1,61 @@
+// Owns CDP save/open/recovery checks against the isolated Character verification app only.
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import { readFile, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+const require = createRequire(import.meta.url), { chromium } = require(process.env.PLAYWRIGHT_MODULE ?? 'playwright');
+const browser = await chromium.connectOverCDP('http://127.0.0.1:9335');
+const page = browser.contexts()[0].pages().find(page => page.url().startsWith('http://127.0.0.1:5175'));
+assert.ok(page, 'Only use the isolated native verification page'); page.setDefaultTimeout(10000);
+const checks = [], failures = [];
+const normalized = characters => characters.map(character => ({ ...character, sharedValues: character.sharedValues ?? {} }));
+page.on('pageerror', error => failures.push(error.message));
+await page.route('**/src/mcp.ts', route => route.fulfill({ contentType: 'text/javascript', body: 'export function setupMcp(run) { window.characterTestAction = run; }' }));
+const action = request => page.evaluate(request => window.characterTestAction(request), request);
+const state = async () => (await action({ action: 'state' })).state;
+const file = resolve('benchmarks/character-native-roundtrip.negareh'), legacyFile = resolve('benchmarks/character-native-legacy.negareh');
+const sheet = page.locator('.character-surface');
+const field = name => sheet.getByRole('textbox', { name, exact: true, includeHidden: true });
+async function edit(name, value) { if (!await field(name).isVisible()) await sheet.getByRole('tab', { name: 'Character Identity', exact: true }).click(); await field(name).fill(value); await page.keyboard.press('Tab'); }
+try {
+  await page.reload(); await page.waitForFunction(() => typeof window.characterTestAction === 'function');
+  const initial = await state(); assert.equal(initial.runtime, 'tauri'); assert.equal(initial.project.dirty, false);
+  await page.getByRole('tab', { name: 'Character', exact: true }).click(); await page.getByRole('button', { name: 'New character', exact: true }).click();
+  await edit('Name', 'Native Mira'); await edit('Middle name', 'Elin'); await edit('Aliases', 'Wanderer'); await edit('Birth time', 'Before dawn');
+  await page.getByRole('button', { name: 'Character instances', exact: true }).click(); await page.locator('.character-menu:popover-open').getByRole('button', { name: 'New instance', exact: true }).click(); const dialog = page.locator('.character-dialog[open]');
+  await dialog.getByRole('textbox', { name: 'Instance label', exact: true }).fill('After the storm'); await dialog.getByRole('checkbox', { name: 'Share Aliases', exact: true }).check(); await dialog.getByRole('button', { name: 'Create instance', exact: true }).click();
+  await edit('Name', 'Native Arin'); await edit('Age / life stage', 'Adult'); await edit('Role summary', 'Mapmaker'); await edit('Character quote', 'Every road leads somewhere.');
+  await page.getByRole('button', { name: 'Characters', exact: true }).click(); await page.getByRole('menuitem', { name: 'New character', exact: true }).click(); await edit('Name', 'Native Ilen');
+  await page.getByRole('button', { name: 'Characters', exact: true }).click(); await page.getByRole('menuitemradio', { name: 'Native Mira Elin', exact: true }).click();
+  await page.getByRole('button', { name: 'Character instances', exact: true }).click(); await page.locator('.character-menu:popover-open').getByRole('button', { name: 'After the storm', exact: true }).click();
+  await sheet.getByRole('button', { name: 'Add category', exact: true }).click(); await page.locator('.character-menu:popover-open').getByRole('button', { name: 'Relationships', exact: true }).click();
+  await sheet.getByRole('button', { name: 'Add relationship', exact: true }).click(); await sheet.getByRole('textbox', { name: 'New relationship label', exact: true }).fill('Brother'); await sheet.getByRole('button', { name: 'Create relationship', exact: true }).click(); await sheet.getByRole('textbox', { name: 'What connects them', exact: true }).fill('A shared childhood beside the river.'); await page.keyboard.press('Tab');
+  await sheet.getByRole('tab', { name: 'Character References', exact: true }).click(); await sheet.getByRole('button', { name: 'Add note', exact: true }).click(); await sheet.getByRole('textbox', { name: 'Reference title', exact: true }).fill('Home'); await page.keyboard.press('Tab'); await sheet.getByRole('textbox', { name: 'Reference note', exact: true }).fill('The place where she can ask for help.'); await page.keyboard.press('Tab'); await sheet.getByRole('button', { name: 'Move reference: Home', exact: true }).focus(); await page.keyboard.press('ArrowRight');
+  await sheet.getByRole('button', { name: 'Add category', exact: true }).click(); await page.locator('.character-menu:popover-open').getByRole('button', { name: 'Appearance', exact: true }).click();
+  const image = await page.evaluate(() => { const canvas = document.createElement('canvas'); canvas.width = canvas.height = 4; const context = canvas.getContext('2d'); context.fillStyle = '#a68961'; context.fillRect(1, 1, 2, 2); return canvas.toDataURL('image/png').split(',')[1]; });
+  await sheet.getByLabel('Upload side study', { exact: true }).setInputFiles({ name: 'side.png', mimeType: 'image/png', buffer: Buffer.from(image, 'base64') }); await sheet.getByRole('img', { name: 'Side appearance study', exact: true }).waitFor();
+  await page.locator('.workspace-tile:visible').getByRole('button', { name: 'Surface menu', exact: true }).click(); await page.getByRole('menuitem', { name: 'Vertical categories', exact: true }).click();
+  const authored = (await state()).project.project.characters;
+  const saved = await action({ action: 'project.save', path: file, overwrite: true }); assert.equal(saved.ok, true, saved.error); assert.equal(saved.state.project.dirty, false);
+  assert.deepEqual(normalized(JSON.parse(await readFile(file, 'utf8')).characters), normalized(authored));
+  assert.equal((await action({ action: 'project.new', decision: 'discard' })).ok, true);
+  assert.equal((await action({ action: 'project.open', path: file, decision: 'discard' })).ok, true);
+  assert.deepEqual(normalized((await state()).project.project.characters), normalized(authored));
+  await page.getByRole('tab', { name: 'Character', exact: true }).click(); assert.equal(await field('Name').inputValue(), 'Native Arin'); assert.equal(await sheet.locator('.character-workspace').getAttribute('data-layout'), 'vertical'); assert.equal((await state()).project.project.characters[0].instances[1].values.connections[0].bond, 'A shared childhood beside the river.');
+  checks.push('real desktop save/reopen preserves instances/scopes/selection, board note and position, appearance study, real-character connection and sidebar preference');
+  await edit('Age / life stage', 'Recovered adult'); await page.waitForTimeout(450);
+  const recovered = await action({ action: 'project.recover', decision: 'discard' }); assert.equal(recovered.ok, true, recovered.error); assert.equal(recovered.state.project.path, null); assert.equal(recovered.state.project.dirty, true);
+  await page.getByRole('tab', { name: 'Character', exact: true }).click(); assert.equal(await field('Age / life stage').inputValue(), 'Recovered adult');
+  checks.push('real recovery returns an unsaved copy with instance edits intact');
+  const legacy = { version: 1, name: 'Legacy characters', notes: '', characters: [{ id: 'character-legacy', name: 'Mira', middleName: 'Elin', familyName: 'Vale', portrait: '', aliases: ['M'], birth: ' Before dawn ', death: '' }] };
+  const legacyBytes = JSON.stringify(legacy); await writeFile(legacyFile, legacyBytes);
+  const opened = await action({ action: 'project.open', path: legacyFile, decision: 'discard' }); assert.equal(opened.ok, true, opened.error); assert.equal(await readFile(legacyFile, 'utf8'), legacyBytes); assert.equal(opened.state.project.project.characters[0].instances, undefined);
+  await page.getByRole('tab', { name: 'Character', exact: true }).click(); await page.getByRole('button', { name: 'Characters', exact: true }).click(); await page.getByRole('menuitemradio', { name: 'Mira Elin Vale', exact: true }).click();
+  assert.equal(await page.getByRole('button', { name: 'Character instances', exact: true }).getAttribute('title'), 'Choose instance: Initial'); await edit('Age / life stage', 'Adult');
+  const migrated = (await state()).project.project.characters[0]; assert.equal(migrated.id, 'character-legacy'); assert.equal(migrated.birth, ' Before dawn '); assert.equal(migrated.instances.length, 1);
+  assert.equal(await readFile(legacyFile, 'utf8'), legacyBytes);
+  checks.push('legacy desktop open does not rewrite its file; first edit materializes Initial without changing old identity or free-form time');
+  await page.screenshot({ path: resolve('benchmarks/character-native-final.png') }); assert.deepEqual(failures, []);
+  await writeFile('benchmarks/character-native-verification.json', JSON.stringify({ passed: checks, failures, date: new Date().toISOString() }, null, 2)); console.log(JSON.stringify({ passed: checks }, null, 2));
+} catch (error) { await page.screenshot({ path: resolve('benchmarks/character-native-failure.png') }); throw error; }
+finally { await action({ action: 'window.close', decision: 'discard' }).catch(() => undefined); await browser.close().catch(() => undefined); }

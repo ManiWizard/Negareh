@@ -1,0 +1,113 @@
+<!-- Owns the single window document; no remote content or frontend framework. -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Negareh</title>
+    <link rel="stylesheet" href="/src/style.css" />
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <section id="boot" aria-label="Starting Negareh">
+      <div class="boot-card">
+        <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true"><path d="M10 38V10l28 28V10" /></svg>
+        <h1>Negareh</h1>
+        <p role="status">Preparing workspace…</p>
+        <progress aria-label="Starting Negareh"></progress>
+      </div>
+    </section>
+    <div id="workspace" hidden>
+      <header class="titlebar">
+        <svg class="app-mark" viewBox="0 0 48 48" aria-label="Negareh"><path d="M10 38V10l28 28V10" /></svg>
+        <div class="menubar" role="menubar" aria-label="Application">
+          <button id="file-button" role="menuitem" data-menu="file" popovertarget="file-menu" aria-haspopup="menu" aria-controls="file-menu" aria-expanded="false">File</button>
+          <button id="edit-button" role="menuitem" data-menu="edit" popovertarget="edit-menu" aria-haspopup="menu" aria-controls="edit-menu" aria-expanded="false" tabindex="-1">Edit</button>
+          <button id="window-button" role="menuitem" data-menu="window" popovertarget="window-menu" aria-haspopup="menu" aria-controls="window-menu" aria-expanded="false" tabindex="-1">Window</button>
+          <button id="help-button" role="menuitem" data-menu="help" popovertarget="help-menu" aria-haspopup="menu" aria-controls="help-menu" aria-expanded="false" tabindex="-1">Help</button>
+        </div>
+        <span class="titlebar-divider" aria-hidden="true"></span>
+        <div id="tabs" class="tabs" role="tablist" aria-label="Tabs"></div>
+        <button id="new-tab" class="new-tab icon-button" data-command="new-tab" aria-label="New tab" title="New tab (Ctrl+T)"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10" /></svg></button>
+        <div class="drag-region" data-tauri-drag-region aria-hidden="true"></div>
+        <div class="window-controls" role="group" aria-label="Window controls">
+          <button class="window-button" data-command="minimize" aria-label="Minimize" title="Minimize"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10" /></svg></button>
+          <button id="maximize" class="window-button" data-command="maximize" aria-label="Maximize" title="Maximize"><svg class="maximize-icon" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="3.5" width="9" height="9" /></svg><svg class="restore-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 5.5v-3h8v8h-3" /><rect x="2.5" y="5.5" width="8" height="8" /></svg></button>
+          <button class="window-button close-window" data-command="close-window" aria-label="Close window" title="Close (Alt+F4)"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 3.5 9 9m0-9-9 9" /></svg></button>
+        </div>
+      </header>
+      <main id="tab-panel" role="tabpanel" tabindex="0">
+      </main>
+      <footer><p id="status" role="status">Starting…</p></footer>
+    </div>
+    <div id="file-menu" class="menu" role="menu" aria-label="File" popover tabindex="-1">
+      <button role="menuitem" data-project="new" tabindex="-1">New project <kbd>Ctrl+N</kbd></button>
+      <button role="menuitem" data-project="open" tabindex="-1">Open project… <kbd>Ctrl+O</kbd></button>
+      <button role="menuitem" data-project="save" tabindex="-1">Save project <kbd>Ctrl+S</kbd></button>
+      <button role="menuitem" data-project="close-project" tabindex="-1">Close project</button>
+      <hr />
+      <button role="menuitem" data-command="new-tab" tabindex="-1">New tab <kbd>Ctrl+T</kbd></button>
+      <button id="close-tab-item" role="menuitem" data-command="close-tab" tabindex="-1">Close tab <kbd>Ctrl+W</kbd></button>
+      <hr />
+      <button role="menuitem" data-command="close-window" tabindex="-1">Exit <kbd>Alt+F4</kbd></button>
+    </div>
+    <div id="edit-menu" class="menu" role="menu" aria-label="Edit" popover tabindex="-1">
+      <button role="menuitem" data-workspace="layout.undo" tabindex="-1">Undo <kbd>Ctrl+Alt+Z</kbd></button>
+      <button role="menuitem" data-workspace="layout.redo" tabindex="-1">Redo <kbd>Ctrl+Alt+Shift+Z</kbd></button>
+      <hr />
+      <button role="menuitem" data-command="cut" tabindex="-1">Cut <kbd>Ctrl+X</kbd></button>
+      <button role="menuitem" data-command="copy" tabindex="-1">Copy <kbd>Ctrl+C</kbd></button>
+      <button role="menuitem" data-command="paste" tabindex="-1">Paste <kbd>Ctrl+V</kbd></button>
+      <button role="menuitem" data-command="delete" tabindex="-1">Delete <kbd>Delete</kbd></button>
+      <hr />
+      <button role="menuitem" data-command="selectAll" tabindex="-1">Select all <kbd>Ctrl+A</kbd></button>
+      <hr />
+      <button role="menuitem" disabled tabindex="-1" title="Preferences are not implemented yet">Preferences</button>
+    </div>
+    <div id="window-menu" class="menu" role="menu" aria-label="Window" popover tabindex="-1">
+      <button role="menuitem" data-command="minimize" tabindex="-1">Minimize</button>
+      <button id="maximize-item" role="menuitem" data-command="maximize" tabindex="-1">Maximize</button>
+    </div>
+    <div id="help-menu" class="menu" role="menu" aria-label="Help" popover tabindex="-1"><button role="menuitem" data-command="about" tabindex="-1">About Negareh</button></div>
+    <dialog id="about" aria-labelledby="about-title">
+      <h2 id="about-title">Negareh</h2>
+      <p>A lightweight desktop shell with menus and tabs.<br />Editing and rendering are not implemented.</p>
+      <button data-command="close-about" autofocus>Close</button>
+    </dialog>
+    <dialog id="welcome" aria-label="Welcome to Negareh">
+      <div class="welcome-banner">
+        <div class="welcome-brand"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 38V10l28 28V10" /></svg><div><h1>Negareh</h1><p>CREATE · DRAW · TELL</p></div></div>
+        <span id="welcome-version">v0.1.0</span>
+        <span class="art-credit">AI-generated artwork</span>
+      </div>
+      <div class="welcome-grid">
+        <section class="welcome-card">
+          <header><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 2h9l5 5v15H5zM14 2v6h5" /></svg><div><h2>New File</h2><p>Create a new project</p></div></header>
+          <button class="blank-project" data-project="new" autofocus><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 2h9l5 5v15H5zM14 2v6h5" /></svg><strong>Blank Project</strong><span>Start from scratch</span></button>
+        </section>
+        <section class="welcome-card recent-card">
+          <header><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M12 5v7l5 3" /></svg><div><h2>Recent Files</h2><p>Open a recent project</p></div></header>
+          <button id="recent-project" class="recent-project" data-project="recent" disabled>No recent projects yet</button>
+          <p class="recent-hint">Your last saved project will appear here.</p>
+        </section>
+        <section class="welcome-card action-card" aria-label="Open and recover">
+          <button data-project="open"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20V4h7l3 3h10v13z" /></svg><span><strong>Open…</strong><small>Browse and open a project file</small></span><b aria-hidden="true">›</b></button>
+          <button id="recover-project" data-project="recover" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10a9 9 0 1 1 2 8M3 3v7h7" /></svg><span><strong>Recover Last Session</strong><small>Restore the last project snapshot</small></span><b aria-hidden="true">›</b></button>
+        </section>
+        <section class="welcome-card action-card" aria-label="Negareh community">
+          <button data-link="releases" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h18v5H3zM5 13v9h14v-9M12 8v14M12 8C2 8 6-2 12 8c6-10 10 0 0 0" /></svg><span><strong>What's New</strong><small>Release page unavailable</small></span><b aria-hidden="true">›</b></button>
+          <button data-link="donation" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21 3 12C-3 3 8-1 12 6c4-7 15-3 9 6z" /></svg><span><strong>Donate to Negareh</strong><small>Donation page unavailable</small></span><b aria-hidden="true">›</b></button>
+        </section>
+      </div>
+      <p id="welcome-message" role="status"></p>
+    </dialog>
+    <p id="project-message" role="status"></p>
+    <dialog id="save-prompt" aria-labelledby="save-prompt-title"><form method="dialog"><h2 id="save-prompt-title">Save your changes?</h2><p>Your project has unsaved changes.</p><div class="save-choices"><button value="cancel" autofocus>Cancel</button><button value="discard">Don't Save</button><button value="save">Save</button></div></form></dialog>
+    <template id="tab-template"><div class="tab"><button class="tab-label" role="tab" aria-controls="tab-panel" aria-selected="false" tabindex="-1"></button><button class="tab-close icon-button" data-close-tab aria-label="Close tab" title="Close tab" tabindex="-1"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 4 8 8m0-8-8 8" /></svg></button></div></template>
+  </body>
+</html>
+
+
+
+
+
