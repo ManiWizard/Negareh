@@ -73,9 +73,9 @@ function mountTimeline(host: HTMLElement, context: SurfaceContext): SurfaceHandl
   const section = document.createElement('section'); section.className = 'application-surface'; section.dataset.surface = 'timeline'; section.setAttribute('aria-label', 'Timeline'); host.append(section);
   const overlay = document.createElement('div'); overlay.className = 'timeline-panel-overlay'; overlay.dataset.open = 'false';
   const panel = document.createElement('aside'); panel.className = 'timeline-side-panel'; panel.id = `timeline-panel-${crypto.randomUUID()}`; panel.setAttribute('aria-label', 'Timeline panel'); panel.inert = true;
-  const edgeArrow = document.createElement('button'); edgeArrow.type = 'button'; edgeArrow.className = 'timeline-edge-arrow'; edgeArrow.setAttribute('aria-controls', panel.id); edgeArrow.setAttribute('aria-expanded', 'false'); edgeArrow.setAttribute('aria-label', 'Open timeline panel'); edgeArrow.append(icon('M15 8H2m5-5L2 8l5 5'));
+  const edgeArrow = document.createElement('button'); edgeArrow.type = 'button'; edgeArrow.className = 'timeline-edge-arrow'; edgeArrow.setAttribute('aria-controls', panel.id); edgeArrow.setAttribute('aria-expanded', 'false'); edgeArrow.setAttribute('aria-label', 'Open timeline panel'); edgeArrow.title = 'Open timeline panel'; edgeArrow.append(icon('M15 8H2m5-5L2 8l5 5'));
   overlay.append(edgeArrow, panel); section.append(overlay);
-  const togglePanel = (open: boolean, instant = false): void => { overlay.dataset.instant = String(instant); overlay.dataset.open = String(open); panel.inert = !open; edgeArrow.setAttribute('aria-expanded', String(open)); edgeArrow.setAttribute('aria-label', open ? 'Close timeline panel' : 'Open timeline panel'); };
+  const togglePanel = (open: boolean, instant = false): void => { const label = open ? 'Close timeline panel' : 'Open timeline panel'; overlay.dataset.instant = String(instant); overlay.dataset.open = String(open); panel.inert = !open; edgeArrow.setAttribute('aria-expanded', String(open)); edgeArrow.setAttribute('aria-label', label); edgeArrow.title = label; };
   edgeArrow.addEventListener('click', event => { togglePanel(overlay.dataset.open !== 'true', event.detail === 0); }, { signal: context.signal });
   let drag: { pointer: number; startX: number; startY: number; x: number; y: number; currentX: number; currentY: number } | null = null;
   let suppressMenu = false;
@@ -152,8 +152,9 @@ for (const [id, name] of [['overview', 'Overview'], ['timeline', 'Timeline'], ['
     if (id === 'overview') return mountOverview(host, context);
     if (id === 'character') return mountCharacter(host, context);
     const section = document.createElement('section'); section.className = 'application-surface'; section.dataset.surface = id; section.setAttribute('aria-label', name);
-    const heading = document.createElement('h1'); heading.textContent = name; section.append(heading);
-    host.append(section);
+    const heading = document.createElement('h1'), info = document.createElement('p'); heading.textContent = name; info.className = 'surface-info';
+    info.textContent = id === 'world' ? 'Worldbuilding, locations, and lore notes are coming in a future release. Use Overview, Timeline, and Character to develop your story in v0.1.' : id === 'page-designer' ? 'Page layouts, panel gutters, and lettering tools are coming in a future release.' : 'Species and ancestry templates are coming in a future release. Character Species and Race fields will connect here automatically.';
+    section.append(heading, info); host.append(section);
     return { update: () => undefined, dispose: () => { section.remove(); } };
   },
 });

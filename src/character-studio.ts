@@ -30,7 +30,7 @@ export function mountCharacterStudio(board: HTMLElement, relationships: HTMLElem
   const error = document.createElement('p'); error.className = 'character-error'; error.setAttribute('role', 'alert');
   const boardStage = document.createElement('div'); boardStage.className = 'character-reference-board'; boardStage.setAttribute('aria-label', 'Reference board');
   const boardViewport = document.createElement('div'), boardSpace = document.createElement('div'); boardViewport.className = 'character-reference-viewport'; boardViewport.setAttribute('aria-label', 'Reference canvas'); boardSpace.className = 'character-reference-space'; boardSpace.append(boardStage); boardViewport.append(boardSpace);
-  const emptyBoard = document.createElement('p'); emptyBoard.className = 'character-studio-empty'; emptyBoard.textContent = 'Add an image or note from the rail to start your reference board.'; boardViewport.append(emptyBoard);
+  const emptyBoard = document.createElement('p'); emptyBoard.className = 'character-studio-empty'; emptyBoard.textContent = 'No references on this board yet. Add an image or note from the rail to begin.'; boardViewport.append(emptyBoard);
   const zoomControls = document.createElement('div'); zoomControls.className = 'character-canvas-zoom'; zoomControls.setAttribute('role', 'group'); zoomControls.setAttribute('aria-label', 'Canvas zoom');
   const zoomLevel = document.createElement('select'); zoomLevel.setAttribute('aria-label', 'Reference canvas zoom');
   for (const value of [25, 50, 75, 100, 125, 150, 175, 200]) { const option = document.createElement('option'); option.value = String(value); option.textContent = `${String(value)}%`; zoomLevel.append(option); }
@@ -79,7 +79,7 @@ export function mountCharacterStudio(board: HTMLElement, relationships: HTMLElem
     error.textContent = ''; return true;
   };
   const updateEditors = (editors: Map<string, Editor>, value: CharacterReference | CharacterConnection, edit: boolean): void => {
-    for (const [field, editor] of editors) { const content: unknown = Object.entries(value).find(([name]) => name === field)?.[1]; const text = typeof content === 'string' ? content : ''; if (!editor.dirty && document.activeElement !== editor.input) editor.input.value = text; editor.input.hidden = !edit; editor.input.disabled = !edit; editor.read.hidden = edit; editor.read.textContent = editor.input instanceof HTMLSelectElement ? editor.input.selectedOptions[0]?.textContent ?? 'None' : text || 'Not recorded'; }
+    for (const [field, editor] of editors) { const content: unknown = Object.entries(value).find(([name]) => name === field)?.[1]; const text = typeof content === 'string' ? content : ''; if (!editor.dirty && document.activeElement !== editor.input) editor.input.value = text; editor.input.hidden = !edit; editor.input.disabled = !edit; editor.read.hidden = edit; editor.read.textContent = editor.input instanceof HTMLSelectElement ? editor.input.selectedOptions[0]?.textContent ?? 'None' : text || 'Not set'; }
   };
   const selectedReference = (): CharacterReference | undefined => access.read()?.values.references.find(item => item.id === referenceId);
   const focusDetails = (details: HTMLElement, canvas: HTMLElement, fallback?: HTMLElement | null): void => { if (Math.abs(details.getBoundingClientRect().left - canvas.getBoundingClientRect().left) < 2) { details.tabIndex = -1; details.focus(); } else fallback?.focus({ preventScroll: true }); };
@@ -339,7 +339,7 @@ export function mountCharacterStudio(board: HTMLElement, relationships: HTMLElem
       element.setAttribute('aria-description', connection.bond);
       if (connection.bond && (connections.length <= 5 || connection.id === connectionId)) { const caption = document.createElement('p'); caption.className = 'character-connection-caption'; caption.dataset.connection = connection.id; const words = connection.bond.trim().split(/\s+/u); caption.textContent = words.length > 7 ? `${words.slice(0, 7).join(' ')}…` : connection.bond; caption.title = connection.bond; graph.append(caption); }
     });
-    if (!connections.length) { const help = document.createElement('p'); help.className = 'character-map-empty'; help.textContent = 'Every connection starts with another person. Add a character relationship to begin.'; graph.append(help); }
+    if (!connections.length) { const help = document.createElement('p'); help.className = 'character-map-empty'; help.textContent = 'No relationships yet. Add a character relationship to begin.'; graph.append(help); }
     graphSize.observe(graph); for (const portrait of graph.querySelectorAll('.character-connection-node > img, .character-connection-node > svg')) graphSize.observe(portrait);
     layoutGraph();
   };

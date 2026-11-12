@@ -328,7 +328,7 @@ export function mountCharacter(host: HTMLElement, context: SurfaceContext): Surf
       const seed = Array.from(reference.id).reduce((sum, letter) => sum + letter.charCodeAt(0), 0); button.style.gridColumn = `span ${String(seed % 3 === 0 ? 3 : 2)}`; button.style.gridRow = `span ${String(seed % 4 === 0 ? 2 : 1)}`;
       const image = document.createElement('img'); image.src = reference.image; image.alt = reference.caption || `Reference ${String(index + 1)}`; image.width = 160; image.height = 100; button.replaceChildren(image); referenceGrid.append(button);
     }
-    if (!values.references.some(reference => reference.image)) { const add = control('Add reference images', () => { if (editable()) referenceUpload.click(); }, 'M8 3v10M3 8h10'); add.className = 'character-reference-empty'; const label = document.createElement('span'); label.textContent = editable() ? 'Collect their world' : 'No references yet'; add.append(label); add.disabled = !editable(); referenceGrid.append(add); }
+    if (!values.references.some(reference => reference.image)) { const add = control('Add reference images', () => { if (editable()) referenceUpload.click(); }, 'M8 3v10M3 8h10'); add.className = 'character-reference-empty'; const label = document.createElement('span'); label.textContent = editable() ? 'Collect their world' : 'No references yet.'; add.append(label); add.disabled = !editable(); referenceGrid.append(add); }
   };
   const buildNavigation = (values: CharacterValues): void => {
     navigation.replaceChildren();

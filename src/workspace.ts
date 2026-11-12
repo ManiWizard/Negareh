@@ -8,7 +8,7 @@ function characterInstanceName(button: HTMLButtonElement, name: string, instance
   button.classList.add('character-instance-selector');
   let title = button.querySelector('span'), label = button.querySelector('small');
   if (!title || !label) { title = document.createElement('span'); label = document.createElement('small'); button.replaceChildren(title, label); }
-  title.textContent = name; label.textContent = instance;
+  title.textContent = name; label.textContent = instance; label.title = `Active character instance: ${instance} (click to switch or manage instances)`;
 }
 function characterPortrait(button: HTMLButtonElement, portrait: string): void {
   if (!portrait) { if (button.querySelector('img')) button.replaceChildren(icon('M2 3h2m3 0h7M2 8h2m3 0h7M2 13h2m3 0h7')); return; }
@@ -240,7 +240,7 @@ export function createWorkspace(host: HTMLElement, tabsHost: HTMLElement, templa
       mode.dataset.surfaceMode = state.mode; left.append(mode);
     }
     if (definition?.menus.length) {
-      const surfaceMenu = dropdown('Surface menu', 'Surface menu', owner => {
+      const surfaceMenu = dropdown('Surface menu', 'Surface view and layout options', owner => {
         popupAt(owner, definition.menus.flatMap(menu => menu.items.map((item, index) => ({ name: item.name, separator: index === 0, run: () => { if (view.handle.commit?.() !== false) request('surface.action', { target: key, value: item.id }); } }))), false, 'Surface menu');
         for (const [index, heading] of [...popup.querySelectorAll('hr')].entries()) { const label = document.createElement('div'); label.className = 'menu-title'; label.textContent = definition.menus[index]?.name ?? ''; heading.after(label); }
       }, icons.more); left.append(surfaceMenu);
@@ -252,7 +252,7 @@ export function createWorkspace(host: HTMLElement, tabsHost: HTMLElement, templa
     }
     if (definition?.groups.length && view.type !== 'character') right.append(button('Toggle tool rail', 'Show or hide the Surface Rail', () => { request('rail.visible', { target: key, enabled: !state.rail.visible }); }, icons.pointer));
     for (const control of definition?.viewControls ?? []) right.append(button(control.name, control.description, () => { request('surface.view', { target: key, value: control.id }); }, control.icon));
-    const viewMenu = button('Deck appearance', 'Deck appearance', () => { popupAt(viewMenu, ['opaque', 'partial', 'transparent'].map(value => ({ name: `${value[0]?.toUpperCase() ?? ''}${value.slice(1)} deck`, run: () => { request('surface.view', { target: key, value: `deck.${value}` }); } }))); }, icons.more);
+    const viewMenu = button('Deck appearance', 'Change Surface Deck transparency', () => { popupAt(viewMenu, ['opaque', 'partial', 'transparent'].map(value => ({ name: `${value[0]?.toUpperCase() ?? ''}${value.slice(1)} deck`, run: () => { request('surface.view', { target: key, value: `deck.${value}` }); } }))); }, icons.more);
     const layout = button('Tile layout', 'Surface options', () => { layoutMenu(key, layout); }, icons.split); right.append(viewMenu, layout);
     if (view.type === 'timeline' || view.type === 'character') {
       const character = view.type === 'character', title = character ? 'Character' : 'Timeline', noun = title.toLowerCase();
@@ -297,7 +297,7 @@ export function createWorkspace(host: HTMLElement, tabsHost: HTMLElement, templa
       });
       name.textContent = selected ? character ? characterName() : selected.name : 'New';
       list.disabled = project.read().busy; name.disabled = project.read().busy || (!selected && !canEdit());
-      if (character && selected) { name.setAttribute('aria-haspopup', 'menu'); name.title = 'Choose a character instance'; const record = project.read().characters.find(item => item.id === selected.id); const portrait = record ? instanceValues(record, typeof state.data.instance === 'string' ? state.data.instance : undefined).portrait : ''; characterPortrait(list, portrait); if (record) characterInstanceName(name, characterName(), characterInstance(record, typeof state.data.instance === 'string' ? state.data.instance : undefined).label); }
+      if (character && selected) { name.setAttribute('aria-haspopup', 'menu'); const record = project.read().characters.find(item => item.id === selected.id); const currentInstance = record ? characterInstance(record, typeof state.data.instance === 'string' ? state.data.instance : undefined).label : ''; name.title = currentInstance ? `Choose instance: ${currentInstance}` : 'Choose a character instance'; const portrait = record ? instanceValues(record, typeof state.data.instance === 'string' ? state.data.instance : undefined).portrait : ''; characterPortrait(list, portrait); if (record) characterInstanceName(name, characterName(), currentInstance); }
       group.append(list, name); center.append(group);
     }
     view.deck.append(left, center, right);
@@ -351,7 +351,7 @@ export function createWorkspace(host: HTMLElement, tabsHost: HTMLElement, templa
     const area = document.createElement('div'); area.className = 'surface-area';
     const rail = document.createElement('aside'); rail.className = 'surface-rail'; rail.setAttribute('aria-label', 'Surface Rail');
     const body = document.createElement('div'); body.className = 'surface-content'; body.tabIndex = 0;
-    const railGrip = document.createElement('div'); railGrip.className = 'rail-grip'; railGrip.dataset.rail = tile.id; railGrip.tabIndex = 0; railGrip.setAttribute('role', 'separator'); railGrip.setAttribute('aria-label', 'Resize tool rail'); railGrip.setAttribute('aria-orientation', 'vertical');
+    const railGrip = document.createElement('div'); railGrip.className = 'rail-grip'; railGrip.dataset.rail = tile.id; railGrip.tabIndex = 0; railGrip.setAttribute('role', 'separator'); railGrip.setAttribute('aria-label', 'Resize tool rail'); railGrip.title = 'Drag to resize tool rail'; railGrip.setAttribute('aria-orientation', 'vertical');
     area.append(rail, body); element.append(deck, area); canvas.append(element);
     const scope = new AbortController(); const state = activeState(tile); const definition = surfaces.get(tile.type);
     if (definition) {
@@ -409,7 +409,7 @@ export function createWorkspace(host: HTMLElement, tabsHost: HTMLElement, templa
       const surfaceIcon = tiles.length > 1 ? icons.split : surfaces.get(tiles[0]?.type ?? '')?.icon ?? icons.file;
       const label = document.createElement('span'); label.textContent = tab.name; button.replaceChildren(icon(surfaceIcon), label);
       button.setAttribute('aria-label', tab.name); button.setAttribute('aria-description', tiles.length > 1 ? `${String(tiles.length)} surfaces in a tiled layout` : surfaces.get(tiles[0]?.type ?? '')?.name ?? 'Unavailable surface');
-      button.id = tab.id; button.title = tab.name; button.setAttribute('aria-selected', String(tab.id === model.activeTab)); button.tabIndex = tab.id === model.activeTab ? 0 : -1; close.setAttribute('aria-label', `Close ${tab.name}`);
+      button.id = tab.id; button.title = tab.name; button.setAttribute('aria-selected', String(tab.id === model.activeTab)); button.tabIndex = tab.id === model.activeTab ? 0 : -1; close.setAttribute('aria-label', `Close ${tab.name}`); close.title = `Close ${tab.name}`;
       wrapper.draggable = false; wrapper.dataset.group = tab.group?.id ?? ''; wrapper.dataset.selected = String(tab.id === model.activeTab); wrapper.classList.toggle('tab-pinned', tab.pinned === true); wrapper.classList.toggle('tab-grouped', tab.group !== undefined); wrapper.style.setProperty('--group-color', tab.group?.color ?? 'transparent'); wrapper.hidden = tab.group?.collapsed === true;
       if (tab.group && !groups.has(tab.group.id)) {
         const group = tab.group; groups.add(group.id); const badge = document.createElement('button'); badge.className = 'tab-group-label'; badge.dataset.group = group.id; badge.textContent = group.name; badge.style.setProperty('--group-color', group.color); badge.setAttribute('aria-label', `Tab group ${group.name || 'Unnamed'}`); badge.setAttribute('aria-expanded', String(!group.collapsed));
@@ -454,7 +454,7 @@ export function createWorkspace(host: HTMLElement, tabsHost: HTMLElement, templa
   }
   function syncDivider(key: string, axis: Axis, group: HTMLElement): void {
     if (dividers.has(key)) return;
-    const element = document.createElement('div'); element.className = 'workspace-divider'; element.dataset.node = key; element.dataset.axis = axis; element.tabIndex = 0; element.setAttribute('role', 'separator'); element.setAttribute('aria-label', 'Resize adjacent tiles'); element.setAttribute('aria-orientation', axis === 'horizontal' ? 'vertical' : 'horizontal'); element.setAttribute('aria-valuemin', '0'); element.setAttribute('aria-valuemax', '100'); group.append(element); dividers.set(key, element);
+    const element = document.createElement('div'); element.className = 'workspace-divider'; element.dataset.node = key; element.dataset.axis = axis; element.tabIndex = 0; element.setAttribute('role', 'separator'); element.setAttribute('aria-label', 'Resize adjacent tiles'); element.title = 'Drag to resize adjacent tiles · Right-click for surface options'; element.setAttribute('aria-orientation', axis === 'horizontal' ? 'vertical' : 'horizontal'); element.setAttribute('aria-valuemin', '0'); element.setAttribute('aria-valuemax', '100'); group.append(element); dividers.set(key, element);
   }
   function updateHistoryControls(): void { for (const [action, enabled] of [['layout.undo', model.activeTab ? model.canUndo() : false], ['layout.redo', model.activeTab ? model.canRedo() : false]] as const) { const button = document.querySelector<HTMLButtonElement>(`[data-workspace="${action}"]`); if (button) button.disabled = !enabled; } }
   function compatible(a: string, b: string): boolean { const first = metrics.rects.get(a), second = metrics.rects.get(b); return Boolean(first && second && adjacent(first, second)); }
